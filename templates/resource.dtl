@@ -1,0 +1,81 @@
+{% autoescape off %}
+
+{% for css in csss %} <link type="text/css" rel="stylesheet" href="{{ css }}?v={{ svn }}" /> {% endfor %}
+
+{% for v in js.preload %} <script src="{{ v }}"></script>{% endfor %}
+
+<script>
+var _ = _ || {};
+_ = Object.assign({
+    baseURL: "{{ state.config.base_url }}",
+    parentURL: "{{ state.config.parent_url }}",
+    currentURL: "{{ state.current_uri }}",
+    version : "{{ state.config.vsn }}",
+    path: "{{ state.path }}",
+    hasLogin: {{ state.has_login }},
+    isProduction : {{ state.config.is_production }},
+    lang : "{{ state.lang }}",
+    isMobile: "{{ state.is_mobile }}",
+    referer: "{{ state.referer }}",
+    token:{
+        name:"{{ state.token.name }}",
+        hash: "{{ state.token.hash }}"
+    },
+
+    Resource:{ vsn: "{{ vsn }}" },
+}, _);
+
+var coverURL = function(str){ return '{{ config.cover_url }}' + (str || ''); };
+var profileURL = function(str){ return '{{ config.profile_url }}' + (str || ''); };
+var brandURL = function(str){ return '{{ config.brand_url }}' + (str || ''); };
+var productURL = function(str){ return '{{ config.product_picture }}' + (str || ''); };
+var accountPic = function(str){ return '{{ config.account_picture }}' + (str || ''); };
+var vehiclePic = function(str){ return '{{ config.vehicle_picture }}' + (str || ''); };
+var companyLogo = function(str){ return '{{ config.company_logo }}' + (str || ''); };
+var companyCover = function(str){ return '{{ config.company_cover }}' + (str || ''); };
+
+var Panels = {
+    header:'header',
+    banner:'banner',
+    mainContent:'main-content',
+    content:'content',
+    footer:'footer'
+};
+
+{{ permission }}
+{% if permission %}
+var PERMISSION = {};
+{% endif %}
+
+var QS = { {% for key, value in query_string %} '{{key}}':'{{ value }}', {% endfor %} };
+var LANG = "{{ state.lang }}";
+var ENV = _.isProduction ? 'PRO':'DEV';
+
+var JS = {
+    init:[{% for v in js.init %} '{{ v }}',{% endfor %}], 
+    page:[{% for v in js.page %} '{{ v }}',{% endfor %}]
+};
+
+{% include "script.js" %}
+{% include "resource.js" %}
+{% if state.config.is_production == "false" %}{% include "resource_dev.js" %}{% endif %}
+
+document.addEventListener("initScriptLoaded", function(e){
+    _.require(JS.page, function(){ 
+        console.log('All script loaded...');
+
+        var evt = document.createEvent("CustomEvent");
+        evt.initEvent("allScriptLoaded", true, true, {detail:JS.init});
+        document.dispatchEvent(evt);
+
+        _.init();
+        {% for s in on_script_loaded %} {{ s }} {% endfor %} 
+    });
+});
+
+{% if state.config.is_production == "true" %}
+{% include "console.js" %}
+{% endif %}
+
+</script>
+{% endautoescape %}

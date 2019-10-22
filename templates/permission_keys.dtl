@@ -1,0 +1,11 @@
+{% if permission %}
+var PERMISSION = {
+{% for per, per_val in permission %}
+    {{ per|upper }}:{
+    {% for p, name in per_val.permission %}
+    {{ p|upper }}:"{{ per}}.{{p}}",
+    {% endfor %}
+    },
+{% endfor %}
+}
+{% endif %}

@@ -1,0 +1,97 @@
+-module(admin_account_controller).
+-behaviour(admin_behaviour).
+-export([
+    init_action/3,
+    get_accounts_action/3,
+    insert_account_action/3, update_account_action/3, update_field_action/3,
+    search_account_action/3
+]).
+
+init_action(R, S, P) -> admin_behaviour:handle(R, S, P, ?MODULE).
+
+get_accounts_action(Req, State, _) ->
+    Res = #{ accounts => account_model:get_accounts()},
+    {Res, Req, State}.  
+
+validate(Post) ->
+    Valid =  validator:validate(#{
+        first_name => {[required], <<"First name required">>},
+        last_name => {[required], <<"Last name required">>},
+        sex => {[required], <<"Sex requried">>},
+        phone_country_id => {[integer, {min, 0}], <<"Select country">>},
+        phone => {[phone, required, digit_only], <<"Phone number is required">>},
+        email => {[email], <<"Email is required">>},
+        birthdate => {[date], <<"Birthdate">>}
+    }, Post),
+    case Valid of
+        {error, Msg } -> {error, Msg};
+        Posted -> 
+            Posted#{
+                about => proplists:get_value(<<"about">>, Post),
+                id => type:to_integer(proplists:get_value(<<"id">>, Post)),
+                email => proplists:get_value(<<"email">>, Post)
+            }
+    end.
+
+insert_account_action(Req, State, _) ->
+    #{body_data := Post, account_id:= Aid} = State,
+    Res = case validate(Post) of
+        {error, Msg} -> #{error => true, msg => Msg, type=>form};
+        Account -> 
+            case admin_account_model:insert_account(Account, Aid) of
+                {error, Db} -> #{error => true, msg => Db, type=> danger};
+                Ac_id ->
+                    Ac = account_model:get_account(Ac_id),
+                    #{error => false, account => Ac, type => success}
+            end
+    end,
+    {Res, Req, State}.
+
+update_account_action(Req, State, _) ->
+    #{ body_data := Post, account_id:= Aid} = State,
+    Res = case validate(Post) of
+        {error, Msg} -> #{error => true, msg => Msg, type=>form};
+        Ac ->
+            case admin_account_model:update_account(Ac, Aid) of
+                {error, Db} -> #{ error=> true, msg=> Db, type=> danger};
+                Ac_id -> #{
+                  error => false,
+                  account => account_model:get_account(Ac_id)
+                 }
+            end
+          end,
+    {Res, Req, State}.
+
+validate_field(Post) ->
+    Type = type:to_atom(proplists:get_value(<<"field">>, Post)),
+    validator:validate(#{
+        field => {[],""},
+        field_value => {[required, Type], <<"Invalid information">>},
+        id => {[integer, {min, 0}], <<"Invalid Account ID">>}
+    }, Post).
+
+update_field_action(Req, State, _) ->
+    #{ body_data:= Post, account_id:= Aid} = State,
+    Res = case validate_field(Post)  of
+        {error, _} -> 
+            Field = proplists:get_value(<<"field">>, Post),
+            Msg = <<"Invalid ", Field/binary>>,
+            #{ error => true, msg => Msg, type=>form};
+        Data -> 
+            case admin_account_model:update_field(Data, Aid) of
+                {error, Db} -> #{error => true, msg => Db, type=> server};
+                Id -> 
+                    #{
+                        error => false,
+                        account => account_model:get_account(Id)
+                    }
+            end
+     end,
+    {Res, Req, State}.
+
+search_account_action(Req, State,_ ) ->
+    #{ body_data:= Post} = State,
+    Res = #{
+      accounts => account_model:filter(Post)
+    },
+    {Res, Req, State}.

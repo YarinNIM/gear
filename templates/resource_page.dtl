@@ -1,0 +1,16 @@
+{% autoescape off %}<!doctype HTML>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="theme-color" content="#0D4E96" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0" />
+        {{ meta_data }}{{ resource }}
+    </head>
+    <body>
+        <header id="header">{{ header }}</header>
+        <section id="main-content">{{ content }}</section>
+        <footer id="footer">{{ footer }}</footer>
+        <div id="modal"></div>
+    </body>
+</HTML>
+{% endautoescape %}

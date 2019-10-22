@@ -1,0 +1,11 @@
+{application, gear_app, [
+    {description,"Gear System"},
+    {vsn,"0.1"},
+    {modules,[]},
+    {applications,[stdlib,compiler,syntax_tools]},
+    {registered,[]}],
+    {env, [
+        {name, <<"Dara">>}
+    ]
+}.
+

@@ -1,0 +1,15 @@
+-define(PRIVILEGES, [
+    {account , [view, insert, update, delete]},
+    {address , [view, insert, update, delete]},
+    {announcement , [view, insert, update]},
+    {contact_person , [view, insert, update,delete]},
+    {document , [view, insert, delete]},
+    {email , [view, insert, delete]},
+    {invoice , [view, insert, download]},
+    {logo , [view, insert, update, delete]},
+    {phone , [view, insert, delete]},
+    {privilege , [view, insert, update, delete]},
+    {profile , [search, view, update, delete]},
+    {template , [view, insert, update, delete]},
+    {url , [view, insert, update, delete]}
+]).

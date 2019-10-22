@@ -1,0 +1,47 @@
+-define(ROUTES, [
+    {<<"">>, get, <<"cp_home@init">>, index},
+    {<<"/">>, get, <<"cp_home@init">>, index},
+    %{<<"/js_permission_keys.js">>, get, <<"resource@permission_keys">>},
+    {<<"/init_resource.html">>, get, <<"cp_home@init_resource">>},
+    {<<"/select_company-[number].html">>, get, <<"cp_home@select_company">>},
+
+    {<<"/company.html">>, put, <<"cp@handle">>, {company, update_company, [<<"company.modify">>]}},
+    {<<"/company/address.html">>, post, <<"cp@handle">>, {company_address, insert_address, [<<"company.modify">>]}},
+    {<<"/company/address.html">>, put,<<"cp@handle">>, {company_address, update_address, [<<"company.modify">>]}},
+    {<<"/company/address.html">>, delete, <<"cp@handle">>, {company_address, delete_address, [<<"company.modify">>]}},
+    %{<<"/company/address.html">>, delete, <<"cp_company@init">>, {delete_address, [<<"company.modify">>]}},
+    {<<"/company/contact.html">>, put, <<"cp@handle">>, {company, update_contact, [<<"company.modify">>]}},
+
+    {<<"/company/subcompany.html">>, post, <<"cp_company@init">>, {insert_subcompany, [<<"company.modify">>]}},
+    {<<"/company/subcompany.html">>, delete, <<"cp_company@init">>, {delete_subcompany, [<<"company.modify">>]}},
+
+    {<<"/company/cover.html">>, post, <<"cp@handle">>, {company_cover, insert_cover, [<<"company.modify">>]}},
+    {<<"/company/cover.html">>, put, <<"cp@handle">>, {company_cover, update_cover, [<<"company.modify">>]}},
+    {<<"/company/logo.html">>, post, <<"cp@handle">>, {company_cover, insert_logo, [<<"company.modify">>]}},
+    {<<"/company/logo.html">>, put, <<"cp@handle">>, {company_cover, update_logo, [<<"company.modify">>]}},
+    {<<"/company/contact_person.html">>, post, <<"cp@handle">>, {company_member, insert_contact_person,  [<<"company.contact_person">>]}},
+    {<<"/company/contact_person.html">>, delete, <<"cp@handle">>, {company_member, delete_contact_person, [<<"company.contact_person">>]}},
+    {<<"/company/contact_person.html">>, put, <<"cp@handle">>, {company_member, update_contact_person, [<<"company.contact_person">>]}},
+    {<<"/company_account.html">>, post, <<"cp@handle">>, {company_member, insert_account, [<<"company.account">>]}},
+    {<<"/company_account.html">>, delete, <<"cp@handle">>, {company_member, delete_account, [<<"company.account">>]}},
+    {<<"/company_account.html">>, put, <<"cp@handle">>, {company_member, update_account, [<<"company.account">>]}},
+
+    {<<"/invoices.html">>, get, <<"cp@handle">>, {cp_invoice, get_invoices, [<<"admin.invoice_view">>]}},
+    {<<"/invoice.html">>, get, <<"cp@handle">>, {cp_invoice, get_detail, [<<"admin.invoice_view">>]}},
+    {<<"/invoice/cash_receipts.html">>, get, <<"cp@handle">>, {cp_invoice, get_cash_receipts, [<<"admin.invoice_view">>]}},
+    {<<"/cash_receipts.html">>, get, <<"cp@handle">>, {cp_cash_receipt, get_cash_receipts, [<<"admin.invoice_view">>]}},
+    {<<"/cash_receipt.html">>, post, <<"cp@handle">>, {cp_cash_receipt, insert_cash_receipt,[<<"admin.invoice_modify">>]}},
+    {<<"/cash_receipt.html">>, get, <<"cp@handle">>, {cp_cash_receipt, get_cash_receipt,[<<"admin.invoice_view">>]}},
+
+    {<<"/products.html">>, get, <<"cp_product@get_products">>},
+    {<<"/product/validate_init.html">>, post, <<"product@validate_init">>},
+    {<<"/product/general_info.html">>, post, <<"cp@handle">>, {product, insert_general_info, [<<"catalog.product_modify">>]}},
+    {<<"/product/general_info.html">>, put, <<"cp@handle">>, {product, update_general_info, [<<"catalog.product_modify">>]}},
+    {<<"/product/category.html">>, put, <<"cp@handle">>, {product, update_category, [<<"catalog.product_modify">>]}},
+    {<<"/product/config.html">>, put, <<"cp@handle">>, {product, update_config, [<<"catalog.product_modify">>]}},
+    {<<"/product/picture.html">>, post, <<"cp@handle">>, {product_picture, upload_picture, [<<"catalog.product_modify">>]}},
+    {<<"/product/picture.html">>, delete, <<"cp@handle">>, {product_picture, remove_picture, [<<"catalog.product_modify">>]}},
+    {<<"/product/picture.html">>, get, <<"cp@handle">>, {product, select_picture, [<<"catalog.product_modify">>]}},
+    {<<"/product/thumb.html">>, put, <<"cp@handle">>, {product, set_thumb, [<<"catalog.product_modify">>]}},
+    {<<"/product/picture_name.html">>, put, <<"cp@handle">>, {product, update_picture_name, [<<"catalog.product_modify">>]}}
+]).

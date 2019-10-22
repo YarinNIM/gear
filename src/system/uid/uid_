@@ -1,0 +1,37 @@
+-module(uid).
+
+% Supervisor 
+-behavior(supervisor).
+-export([start/0, start_link/0, init/1]).
+-define(WORKER, uid_worker).
+-export([get_id/0]).
+
+%API
+-export([restart_pool/0]).
+
+-spec start() -> ok.
+start()-> 
+    start_link().
+
+%start_link() -> supervisor:start_link({local, ?SERVER}, ?MODULE, []).
+start_link() -> supervisor:start_link({local, config:system_sup()}, ?MODULE, []).
+
+init([])->
+    Flags = {one_for_one, 1000, 3000},
+    Pool_args = [
+        %{name, {local, ?SERVER}},
+        {name, {local, ?MODULE}},
+        {worker_module, ?WORKER},
+        {size, 10},
+        {max_overflow, 20}],
+    Child_specs = poolboy:child_spec(?MODULE, Pool_args,[]),
+    {ok, {Flags,[Child_specs]}}.
+
+restart_pool()->
+    supervisor:terminate_child(?MODULE, ?WORKER),
+    supervisor:restart_child(?MODULE, ?WORKER).
+
+get_id() -> 
+    poolboy:transaction(?MODULE, fun(Worker) ->
+        gen_server:call(Worker, get_id)
+    end).
