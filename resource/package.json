@@ -5,7 +5,11 @@
   "main": "index.js",
   "dependencies": {},
   "devDependencies": {
-    "reactjs-bulma": "0.0.1"
+    "clean-webpack-plugin": "^3.0.0",
+    "reactjs-bulma": "latest",
+    "sass": "^1.23.3",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

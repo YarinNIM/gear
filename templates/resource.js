@@ -52,12 +52,9 @@ document.addEventListener('DOMContentLoaded',function(e){
     });
 });
 
-var baseURL = function(param) { return _.baseURL + (param || ''); };
-var parentURL = function(param) { return _.parentURL + (param || ''); };
-
-
-/* For localization */
-_.locale = function (key, bind = {}) 
+const baseURL = function(param) { return _.baseURL + (param || ''); };
+const parentURL = function(param) { return _.parentURL + (param || ''); };
+const locale = function (key, bind = {}) 
 {
     let trans = key.split('.').reduce(function(inLocale, i) {
         return inLocale[i] || key;
