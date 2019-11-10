@@ -17,7 +17,7 @@ _.require = function(src, cb)
 {
     if(!this.isEmpty(src)){
         var src = src.map(function(item){
-            return item+(ENV=="DEV"?("?ext="+Math.random()):"");
+            return item + (_.env != "production"?("?ext="+Math.random()):"");
         });
         var name ="name"+Math.random();
         $script(src, cb);
@@ -43,48 +43,30 @@ _.dispatchEvent = function(name, props)
     document.dispatchEvent(evt);
 };
 
-
-document.addEventListener('DOMContentLoaded',function(e)
-    {
-        _.require(JS.init, function(){
-            console.log("Initial script loaded...");
-            /* History.init({baseURL:App.baseURL}); */
-            _.rDom = React.createElement;
-            _.rRender = function(rd, t, cb){
-                ReactDOM.unmountComponentAtNode(document.getElementById(t));
-                ReactDOM.render(rd, document.getElementById(t), cb); 
-            };
-            var evt = document.createEvent("CustomEvent");
-            evt.initEvent("initScriptLoaded", true, true, {detail:JS.init});
-            document.dispatchEvent(evt);
-        });
+document.addEventListener('DOMContentLoaded',function(e){
+    _.require(JS.init, function(){
+        console.log("Initial script loaded...");
+        var evt = document.createEvent("CustomEvent");
+        evt.initEvent("initScriptLoaded", true, true, {detail:JS.init});
+        document.dispatchEvent(evt);
     });
+});
 
 var baseURL = function(param) { return _.baseURL + (param || ''); };
 var parentURL = function(param) { return _.parentURL + (param || ''); };
 
-_.Locales = _.Locales || {};
-_.Locale = 
-    {
-        LANG: LANG || 'en',
-        inject:function(str, obj = {})
-        {
-            for (var key in obj)
-            {
-                str = str.replace(`:${key}`, obj[key]);
-            }
-            return str;
-        },
 
-        get:function(key, replace = {})
-        {
-            let trans = key.split('.').reduce((t, i) => t[i] || key, _.Locales);
-            return this.inject(trans || key, replace);
-        },
+/* For localization */
+_.locale = function (key, bind = {}) 
+{
+    let trans = key.split('.').reduce(function(inLocale, i) {
+        return inLocale[i] || key;
+    }, _.Locales || {});
 
-        question:function(key, force, dom) { return this.get(key, force, dom, '?') },
-        label: function(key, force, dom) { return this.get(key, force, dom, ':'); }
-    };
+    return Object.keys(bind).reduce(function(inStr, index) {
+        return inStr.replace(`:${index}`, bind[index]);
+    }, trans || key);
+};
 
 _.addCSRF = function(data)
 {
@@ -99,4 +81,3 @@ _.removeKeys = function(obj, keys)
         delete obj[key];
     });
 };
-

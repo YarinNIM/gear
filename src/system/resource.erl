@@ -46,11 +46,10 @@ map_val(K,M, D) ->
 %% returns true if the  application in production mode
 %% otherwise returns false
 %% @private
--spec is_production(app_state()) -> boolean().
-is_production(State) -> 
+-spec app_env(app_state()) -> boolean().
+app_env(State) -> 
     #{config := Conf} = State,
-    #{is_production := IP} = Conf,
-    IP.
+    map_val(env, Conf, development).
 
 
 %% @doc As the framework can handle many application 
@@ -92,7 +91,6 @@ render(Param, Req, State) ->
 render(Param, Req, State, Page) ->
     App_name = app_name(State),
     Resource = App_name:resource(),
-    Is_pro = is_production(State),
     Base_url = config:base_url(State),
     #{ vsn := Vsn } = Resource,
 
@@ -105,7 +103,7 @@ render(Param, Req, State, Page) ->
         config=> maps:to_list(config:app_config(State)),
         query_string => query_string(Req),
         base_url => Base_url,
-        is_production => Is_pro
+        env => app_env(State)
     },
 
     Params1 = Params#{ base_url => config:base_url(State) },
@@ -201,9 +199,9 @@ render_page(Props, Req, State, L) ->
 
     Html = template:render(map_val(page, Layout), maps:merge(Params, Tmp)),
     #{config := Config } = State,
-    #{is_production := Is_pro} = Config,
-    case Is_pro of
-        true -> 
+    #{env := Env} = Config,
+    case Env of
+        production -> 
             Html1 = re:replace(Html, <<"[\\n]*">>, <<"">>, [{return, binary}, global]),
             Html2 = re:replace(Html1, <<"\\s{2,}">>, <<" ">>, [{return, binary}, global]),
             re:replace(Html2, <<"\\},\\}">>, <<"}}">>, [{return, binary}, global]);

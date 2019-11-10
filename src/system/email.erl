@@ -51,9 +51,6 @@ send(Props) ->
 
     %%Dkim = dkim_options(),
     Email = {<<"multipart">>, <<"mixed">>, Mime_email,[],[Mime_body | Mime_att]},
-
-    %Encoded = mimemail:encode(Email, [{dkim, Dkim}]),
-    io:format('Email: ~p~n',[Email]),
     Encoded = mimemail:encode(Email),
     Gen_res = gen_smtp_client:send({From_email, To, Encoded}, Op, fun(Cb) ->
             io:format(' - Email callback [~p]...~n', [Cb])

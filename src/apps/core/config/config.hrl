@@ -1,6 +1,8 @@
+-type env():: development | testing | production | atom().
 -define(APP_CONFIG, #{
     vsn => <<"0.1">>,
-    is_production => true,
+    env => development,
+    % is_production => false,
     language => <<"en">>,
     encryption_key => <<"km3rg3@r_@pp11cat10nf0r0nl1n3R#5T@UR@NT">>,
     auth_pages => [],

@@ -7,7 +7,7 @@ migrate_account() ->
     Sql.
 
 run_sql() ->
-    Res = os:cmd("./BTNG/bongthom/resource/db/migrate/account.sh"),
+    Res = os:cmd("./db/migrate/account.sh"),
     io:format('Res: ~p~n',[Res]).
 
 

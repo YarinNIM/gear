@@ -3,15 +3,16 @@
 {% for v in js.preload %} <script src="{{ v }}"></script>{% endfor %}
 
 <script>
-var _ = _ || {};
+    var _ = _ || {};
 _ = Object.assign({
+    vsn: "{{ vsn }}",
     baseURL: "{{ state.config.base_url }}",
     parentURL: "{{ state.config.parent_url }}",
     currentURL: "{{ state.current_uri }}",
     version : "{{ state.config.vsn }}",
     path: "{{ state.path }}",
     hasLogin: {{ state.has_login }},
-    isProduction : {{ state.config.is_production }},
+    env: "{{ state.config.env }}",
     lang : "{{ state.lang }}",
     isMobile: "{{ state.is_mobile }}",
     referer: "{{ state.referer }}",
@@ -29,9 +30,6 @@ var PERMISSION = {};
 {% endif %}
 
 var QS = { {% for key, value in query_string %} '{{key}}':'{{ value }}', {% endfor %} };
-var LANG = "{{ state.lang }}";
-var ENV = _.isProduction ? 'PRO':'DEV';
-
 var JS = {
     init:[{% for v in js.init %} '{{ v }}',{% endfor %}], 
     page:[{% for v in js.page %} '{{ v }}',{% endfor %}]
@@ -44,12 +42,9 @@ var JS = {
 document.addEventListener("initScriptLoaded", function(e){
     _.require(JS.page, function(){ 
         console.log('All script loaded...');
-
         var evt = document.createEvent("CustomEvent");
         evt.initEvent("allScriptLoaded", true, true, {detail:JS.init});
         document.dispatchEvent(evt);
-
-        _.init();
         {% for s in on_script_loaded %} {{ s }} {% endfor %} 
     });
 });

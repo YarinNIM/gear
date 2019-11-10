@@ -35,7 +35,7 @@
 %% @doc Server configuration efine port and protocol including server
 %% certificatte and other options
 %% protocol: http | hhttps
--type protocol(): http | https.
+-type protocol() :: http | https.
 -define(SERVER, #{
     protocol => env:get(protocol, http),
     config => env:get(protocol_config, [ {port, 80} ])
