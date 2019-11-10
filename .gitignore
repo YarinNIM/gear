@@ -1,6 +1,9 @@
 .erlang.mk/
-.erlang.mk.wsp
+.erlang.mk.swp
 .gitignore.swp
+*.swo
+*.swp
+*.wsp
 *.beam
 erlang.mk
 gear.d
