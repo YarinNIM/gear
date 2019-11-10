@@ -1,7 +1,5 @@
 {% autoescape off %}
-
 {% for css in csss %} <link type="text/css" rel="stylesheet" href="{{ css }}?v={{ svn }}" /> {% endfor %}
-
 {% for v in js.preload %} <script src="{{ v }}"></script>{% endfor %}
 
 <script>
@@ -24,23 +22,6 @@ _ = Object.assign({
 
     Resource:{ vsn: "{{ vsn }}" },
 }, _);
-
-var coverURL = function(str){ return '{{ config.cover_url }}' + (str || ''); };
-var profileURL = function(str){ return '{{ config.profile_url }}' + (str || ''); };
-var brandURL = function(str){ return '{{ config.brand_url }}' + (str || ''); };
-var productURL = function(str){ return '{{ config.product_picture }}' + (str || ''); };
-var accountPic = function(str){ return '{{ config.account_picture }}' + (str || ''); };
-var vehiclePic = function(str){ return '{{ config.vehicle_picture }}' + (str || ''); };
-var companyLogo = function(str){ return '{{ config.company_logo }}' + (str || ''); };
-var companyCover = function(str){ return '{{ config.company_cover }}' + (str || ''); };
-
-var Panels = {
-    header:'header',
-    banner:'banner',
-    mainContent:'main-content',
-    content:'content',
-    footer:'footer'
-};
 
 {{ permission }}
 {% if permission %}

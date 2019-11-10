@@ -19,19 +19,8 @@ _.require = function(src, cb)
         var src = src.map(function(item){
             return item+(ENV=="DEV"?("?ext="+Math.random()):"");
         });
-
         var name ="name"+Math.random();
-        //$script(src, name);
         $script(src, cb);
-        /*$script.ready(name, function(){
-            if(String(cb) != "undefined"){
-                var timer = window.setTimeout(function(){
-                    cb();
-                    window.clearTimeout(timer);
-                },10);
-            }
-        });
-        */
     }else{
         if(String(cb) != "undefined"){
             var timer = window.setTimeout(function(){

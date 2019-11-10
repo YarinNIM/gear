@@ -1,15 +1,16 @@
--module(locale_agent).
--include("../../language/kh_agent.hrl").
--include("../../language/en_agent.hrl").
--export([get/1, get/2, to_unicode/1]).
+-module(locale).
+-export([
+    get/1, get/2, to_unicode/1
+]).
 
 get(Lang)->
     Locale = case Lang of 
-        <<"en">> -> ?EN;
-        <<"kh">> -> to_unicode(?KH)
+        <<"en">> -> <<"EN">>;
+        <<"kh">> -> <<"to_unicode(?KH)">>
     end,
     Locale.
 
+-spec get(binary() | atom() | list(), map())->binary().
 get(K, State) when is_binary(K) ->
     get(binary_to_atom(K, latin1), State);
 get(K, State) when is_list(K) ->

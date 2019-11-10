@@ -5,7 +5,7 @@
     {applications,[stdlib,compiler,syntax_tools]},
     {registered,[]}],
     {env, [
-        {name, <<"Dara">>}
+        {name, <<"Dara">>, }
     ]
 }.
 

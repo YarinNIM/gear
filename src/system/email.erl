@@ -53,7 +53,8 @@ send(Props) ->
     Email = {<<"multipart">>, <<"mixed">>, Mime_email,[],[Mime_body | Mime_att]},
 
     %Encoded = mimemail:encode(Email, [{dkim, Dkim}]),
-    Encoded = mimemail:encode(Email, []),
+    io:format('Email: ~p~n',[Email]),
+    Encoded = mimemail:encode(Email),
     Gen_res = gen_smtp_client:send({From_email, To, Encoded}, Op, fun(Cb) ->
             io:format(' - Email callback [~p]...~n', [Cb])
         end),
@@ -83,7 +84,7 @@ get_config(Props) ->
 mime_body(Props) ->
     {T,F}= content_type(Props),
     Content_type = <<T/binary,"/",F/binary>>,
-    Body = get_field(content, Props, <<"Email body">>),
+    Body = get_field(body, Props, <<"Email body">>),
     {T, F,[
         {<<"Content-Type">>, Content_type},
         {<<"Content-Transfer-Encoding">>, <<"8bit">>},

@@ -1,0 +1,16 @@
+.erlang.mk/
+.erlang.mk.wsp
+.gitignore.swp
+*.beam
+erlang.mk
+gear.d
+
+_rel/
+ebin/
+deps/
+
+start.sh
+resource/node_modules/
+resource/package-lock.json
+src/env.hrl
+

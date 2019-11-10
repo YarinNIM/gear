@@ -19,5 +19,4 @@ var reloadCSS = function()
     $('link[data-src]').each(function(i, e){
         loadCSS($(this).attr('data-src'));
     });
-
 }

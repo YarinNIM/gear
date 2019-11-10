@@ -2,11 +2,18 @@
 -define(STATIC_PATH, ?SYS_PATH ++ "static/").
 
  -define(APP, #{
+    %% 
+    core_app => #{
+        domain => "[www.]gear.loc",
+        sub_apps => [],
+        static => []
+    },
+
     %% @doc This the main administrator panel
     %% which is accessible by only administrator account.
     admin_app => #{
-        domain => "admin.gear.loc",
-        sub_apps => [ {ac, account_app} ],
+        domain => "",
+        sub_apps => [],
         static => [
             {"/js/[...]", {dir, ?STATIC_PATH ++ "admin/js/"}},
             {"/locale/[...]", {dir, ?STATIC_PATH ++ "admin/locale/"}},
@@ -21,11 +28,8 @@
     %% @doc This application is for company resource management
     %% where is accessed by only account belongs to the specific company.
     cp_app => #{
-        domain => <<"cp.gear.loc">>,
-        sub_apps => [
-            { account, account_app},
-            { fleet, fleet_app}
-        ],
+        domain => "",
+        sub_apps => [],
         static => [
             {"/js/[...]", {dir, ?STATIC_PATH ++ "cp/js/"}},
             {"/locale/[...]", {dir, ?STATIC_PATH ++ "locale/"}},
@@ -41,7 +45,7 @@
     %% Account registered only one application and
     %% could be used all applications in the system.
     account_app => #{
-        domain => <<"">>,
+        domain => "",
         sub_apps => [],
         static => [
             {"/js/[...]", {dir, ?STATIC_PATH ++ "account/js/"}},
@@ -51,7 +55,7 @@
             {"/images/[...]", {dir, ?STATIC_PATH ++ "account/images/"}},
             {"/favicon.icon", {dir, ?STATIC_PATH ++ "cambohub/images/favicon.icon"}}
         ]
-    },
+    }
 
  }).
  

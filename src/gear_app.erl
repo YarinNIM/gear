@@ -10,8 +10,7 @@
 -define(TOPPAGE_HANDLER, toppage_handler).
 
 %% API.
--export([start/2]).
--export([stop/1]).
+-export([start/2, stop/1]).
 -export([
     app_static/1,
     sub_apps/1, sub_apps/2,

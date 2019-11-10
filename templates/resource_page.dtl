@@ -1,6 +1,7 @@
 {% autoescape off %}<!doctype HTML>
 <html lang="en">
     <head>
+        <meta name="{{ state.token.name }}" content="{{ state.token.hash }}" />
         <meta charset="utf-8" />
         <meta name="theme-color" content="#0D4E96" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0" />

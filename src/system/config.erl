@@ -6,16 +6,14 @@
 %%
 -module(config).
 -include("../config/config.hrl").
--include("../config/apps.hrl").
--include("../config/database.hrl").
 
 -type app_state()::term().
 -export([
     parent_url/1, parent_url/2, base_url/1, base_url/2, item/2,
     locale_url/2, locale_url/3, app_config/1
+    %%  path/0,path/1, path/2,
+    %%external_app/0,external_app/1
 ]).
--export([path/0,path/1, path/2]).
--export([external_app/0,external_app/1]).
 -export([event_listener/0, event_listener/1]).
 -export([system_sup/0]).
 
@@ -134,15 +132,16 @@ get_dispatch() ->
         {Domain, Path}
     end, Apps).
 
-path() -> ?PATH.
-path(P) -> path(P, "").
-path(P, E) -> map_val(P, ?PATH,"") ++ type:to_list(E).
+%%
+%path() -> ?PATH.
+%path(P) -> path(P, "").
+%path(P, E) -> map_val(P, ?PATH,"") ++ type:to_list(E).
 
-external_app() -> map_val(external_app, ?PATH).
-external_app(A) ->
-    Path = map_val(external_app,?PATH),
-    map_val(A, Path).
-
+%external_app() -> map_val(external_app, ?PATH).
+%external_app(A) ->
+%   Path = map_val(external_app,?PATH),
+%   map_val(A, Path).
+%
 event_listener() -> ?EVENT_LISTENER.
 event_listener(E) -> map_val(E, event_listener()).
 

@@ -11,10 +11,9 @@
         driver => "postgres",
         host => "localhost",
         %host => "192.168.0.122",
-        database => "database_name",
-        user_name => "user_name",
-        password => "password",
-     
+        database => "gear",
+        user_name => "root",
+        password => "root",
         size => 10,
         max_overflow => 20
     }
