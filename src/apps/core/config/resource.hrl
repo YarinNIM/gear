@@ -9,21 +9,10 @@
     %%  page => or_page
     %% },
 
-    css => [ 
-        ?LIB ++ "icon-theme.min.css",
-        ?BASE ++ "css/style.css"
-    ],
+    css => [ ],
 
     js => #{
-        preload => [
-            ?LIB ++ "util.min.js",
-            ?LIB ++ "lib.min.js",
-            ?BASE ++ "js/app.js"
-        ],
-
-        init => [
-            ?BASE ++ "locale/en/locale.js"
-            %% ?LIB ++ "react-dom.development.js"
-        ]
+        preload => [ ],
+        init => [ ]
     }
 }).

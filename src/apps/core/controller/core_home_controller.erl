@@ -11,7 +11,6 @@
 ]).
 
 index_action(Req, State, _) ->
-    io:format('Req: ~p~n',[Req]),
     Res = resource:render_page( #{
         js => [],
         on_script_loaded => []

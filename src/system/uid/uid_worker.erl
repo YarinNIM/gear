@@ -20,8 +20,6 @@ handle_call(get_id, _F, State) ->
     UID = crypt:hmac(sha, <<"unique_id">>, K),
     {reply, UID, #{id => ID, time => erlang:system_time()}}.
 
-
-
 handle_cast(_Msg, S)-> {noreply, S}.
 handle_info(_Info, S) -> {noreply, S}.
 terminate(_Reason, _State) -> ok.

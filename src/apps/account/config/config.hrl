@@ -1,6 +1,6 @@
 -define(APP_CONFIG, #{
     vsn => <<"0.1">>,
-    is_production => false,
+    env => development,
     language => <<"en">>,
     encryption_key => <<"km3rg3@r_@pp11cat10n">>,
     auth_pages => [account_home],

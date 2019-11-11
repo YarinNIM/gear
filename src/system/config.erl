@@ -10,7 +10,9 @@
 -type app_state()::term().
 -export([
     parent_url/1, parent_url/2, base_url/1, base_url/2, item/2,
-    locale_url/2, locale_url/3, app_config/1
+    locale_url/2, locale_url/3, app_config/1,
+    crypt/0, crypt/1, crypt/2
+
     %%  path/0,path/1, path/2,
     %%external_app/0,external_app/1
 ]).
@@ -18,12 +20,11 @@
 -export([system_sup/0]).
 
 -export([
-    app/0, app/1,app/2,
+    app/0, app/1,app/2, app/3,
     db/0, db/1, db/2, db_default_pool/0,
     % db_record_size/0,
     email/0, email/1, email/2,
     session/0, session/1,
-    static/0, static/1, static/2,
     get_dispatch/0,app_static/1,
     cors/0, cors/1, cors/2,
 
@@ -98,16 +99,11 @@ session(K) -> map_val(K, ?SESSION).
 
 app() -> ?APP.
 app(App) -> map_val(App, ?APP,[]).
-app(A, K) ->
+app(A, K) -> app(A, K, undefined).
+app(A, K, D) ->
     App = app(A),
-    map_val(K, App).
+    map_val(K, App, D).
 
-
-static() -> ?STATIC.
-static(K) -> map_val(K, ?STATIC,[]).
-static(S, K) ->
-    Stc = static(S),
-    map_val(K, Stc).
 
 email() -> ?EMAILS.
 email(E) -> map_val(E, ?EMAILS,[]).
@@ -174,3 +170,6 @@ render_field(F, Params) when is_binary(F) ->
     template:render(F,Params); 
 render_field(F, _) -> F.
 
+crypt() -> ?CRYPT.
+crypt(K) -> crypt(K, undefined).
+crypt(K, D) -> map_val(K, ?CRYPT, D).

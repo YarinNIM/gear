@@ -4,8 +4,6 @@
     {<<"/test.html">>, get, {account_home, test_get}},
     {<<"/test.html">>, post, {account_home, test_post}},
 
-    
-    {<<"">>, get, {account_home, home}},
     {<<"/">>, get, {account_home, home}},
     {<<"/init_info.html">>, get, {account_home, init_info}},
     {<<"/account.html">>, get, {account, active_account}},
@@ -14,19 +12,19 @@
     {<<"/js_permission_keys.js">>, get, {resource, permission_keys}},
 
     %% Authentication
-    {<<"/login.html">>, get, <<"account_login@render">>},
-    {<<"/login.html">>, post, <<"account_login@login">>},
-    {<<"/logout.html">>, get, <<"account@logout">>},
+    {<<"/login.html">>, get, {account_login, render}},
+    {<<"/login.html">>, post, {account_login, login}},
+    {<<"/logout.html">>, get, {account, logout}},
     {<<"/password.html">>, put, {account, change_pwd}},
 
 
-    {<<"/register.html">>, get, <<"account_register@render">>},
-    {<<"/register.html">>, post, <<"account_register@register">>},
-    {<<"/register/resend_verification.html">>, post, <<"account_register@resend_verification">>},
-    {<<"/verify-[number]-[string]-[string].html">>, get, <<"account_verify@verify">>},
-    {<<"/recover_pwd.html">>, post, <<"account_recover@recover_pwd">>},
+    {<<"/register.html">>, get, { account_register, render}},
+    {<<"/register.html">>, post, { account_register, register}},
+    {<<"/register/resend_verification.html">>, post, { account_register, resend_verification}},
+    {<<"/verify-[number]-[string]-[string].html">>, get, { account_verify, verify}},
+    {<<"/recover_pwd.html">>, post, { account_recover, recover_pwd}},
     {<<"/recover_pwd-[number]-[string]-[string].html">>, get, <<"account_recover@render_recover">>},
-    {<<"/reset_password.html">>, post, <<"account_recover@reset_password">>},
+    {<<"/reset_password.html">>, post, { account_recover, reset_password}},
 
     {<<"/resource.html">>, get, {resource, get_resource}},
 

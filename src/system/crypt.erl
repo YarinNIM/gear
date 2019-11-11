@@ -6,23 +6,25 @@
 %%
 
 -module(crypt).
--include("../config/crypt.hrl").
 -export([
-    to_hex/1, get_config/0,
+    to_hex/1,
     hmac/1, hmac/2, hmac/3,
-    hash/2
+    hash/1, hash/2
 ]).
  
 hmac(P) -> 
-    #{algo:= Algo, secret_key:= Key} = ?CONF,
+    #{algo:= Algo, secret_key:= Key} = config:crypt(),
     hmac(Algo, Key, P).
 hmac(Algo, P) -> 
-    #{secret_key:= Key} = ?CONF,
+    #{secret_key:= Key} = config:crypt(),
     hmac(Algo, Key, P).
 hmac(T, K, D) ->
     H = crypto:hmac(T, K, type:to_binary(D)),
     to_hex(H).
 
+hash(P) -> 
+    #{ algo:= Alg, secret_key:= Key } = config:crypt(),
+    hmac(Alg, Key, P).
 hash(P, State) ->
     K = config:item(encryption_key, State),
     hmac(sha256, K, P).
@@ -39,5 +41,3 @@ int_to_hex(N) when N < 256 -> [hex(N div 16), hex(N rem 16)].
  
 hex(N) when N < 10 -> $0+N;
 hex(N) when N >= 10, N < 16 -> $a + (N-10).
-
-get_config() -> ?CONF.

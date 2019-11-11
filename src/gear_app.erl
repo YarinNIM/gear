@@ -7,7 +7,7 @@
 
 -module(gear_app).
 -behaviour(application).
--define(TOPPAGE_HANDLER, toppage_handler).
+-define(HANDLER, toppage_handler).
 
 %% API.
 -export([start/2, stop/1]).
@@ -17,25 +17,16 @@
     apps/0, apps_with_domain/1, apps_with_domain/2
 ]).
 
-static_route(Route, Pre) ->
-    Prefix = case Pre of
-        "" -> "";
-        _ -> "/" ++ type:to_list(Pre)
-    end,
-    [{Prefix ++ P, cowboy_static, Op} || {P, Op } <- Route].
-
-%% @doc Get the static application configuration
+%% Get the static application configuration
 %% including sub application static route
 app_static(App) ->
-    Static = static_route(config:app(App, static), ""),
-    Static ++ lists:foldr(fun({Prefix, Sub_app}, Init) ->
-        Init ++ static_route(config:app(Sub_app, static), Prefix)
-    end, [], config:app(App, sub_apps)).
-
+    {Location, Dirs} = config:app(App, static, {<<"">>, []}),
+    [{<<"/", Dir/binary, "/[...]">>, cowboy_static, {dir, <<Location/binary, "/", Dir/binary>>}} || Dir <- Dirs] ++
+    [{ <<"/favicon.ico">>, cowboy_static, {file, <<Location/binary, "favicon.icon">>}}].
 
 %% @doc Get sub applications and add to the handler
 sub_apps(App) ->
-    Sub = config:app(App, sub_apps),
+    Sub = config:app(App, sub_apps, []),
     sub_apps(Sub, []).
 sub_apps([], Apps) -> Apps;
 sub_apps([{Prefix, App} | T], Apps) ->
@@ -44,13 +35,13 @@ sub_apps([{Prefix, App} | T], Apps) ->
     %Static = sub_static({Prefix, App}),
     %Apps1 = Apps ++ Static ++ [
     Apps1 = Apps ++ [
-        {Base, ?TOPPAGE_HANDLER, [{app, App}, {prefix, Pref1}]}
+        {Base, ?HANDLER, [{app, App}, {prefix, Pref1}]}
     ],
     sub_apps(T, Apps1).
     
 apps_with_domain(Apps) -> apps_with_domain(Apps, []).
 apps_with_domain([], Apps) -> Apps;
-apps_with_domain([App = {_, Conf}|T],Apps_wd) ->
+apps_with_domain([App = {_, Conf} | T], Apps_wd) ->
     #{domain := Domain} = Conf,
     case Domain of
         undefined -> apps_with_domain(T, Apps_wd);
@@ -62,33 +53,18 @@ apps() ->
     Apps_wd = apps_with_domain(Apps),
     lists:map(fun({App, _}) ->
         Domain = config:app(App, domain),
-        Handler = toppage_handler,
-        Static = app_static(App),
-        Path = Static ++
-            [{"/", Handler, [{app, App}]}] ++
-            sub_apps(App) ++
-            [{"/[...]", Handler, [{app, App}]}],
+        Path = [{"/", ?HANDLER, [{app, App}]}]
+            ++ app_static(App)
+            ++ sub_apps(App)
+            ++ [{"/[...]", ?HANDLER, [{app, App}]}],
         {Domain, Path}
     end, Apps_wd).
-
-static_resource() -> 
-    Res = maps:to_list(config:static()),
-    lists:map(fun({R, _}) ->
-        Domain = config:static(R,domain),
-        Path =   config:static(R, path),
-        Extra = config:static(R, extra),
-        {Domain, [
-            {"/", cowboy_static, {file, Path ++ "index.html"}},
-            {"/[...]", cowboy_static, {dir, Path, Extra}}
-        ]}
-    end,Res).
 
 %% @doc Return the dispatch configuretion
 %% and compile
 get_dispatch() -> 
     Apps = apps(),
-    Res = static_resource(),
-    cowboy_router:compile(Apps ++ Res).
+    cowboy_router:compile(Apps).
 
 %% @doc Start the application
 start(_Type, _Args) ->

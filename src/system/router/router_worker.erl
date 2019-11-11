@@ -6,9 +6,10 @@
 ]).
 -define(VAL(K, P), proplists:get_value(K, P)).
 
--type route_type() :: 
-    { URL::binary(), HTTP_method::atom(), Handler::binary()} | 
-    {URL::binary(), HTTP_method::atom(), Handler::binary(), Extra_paramter::any()}.
+-type handler():: atom() | { atom(), atom() }.
+-type route_type() ::
+    { URL::binary(), HTTP_method::atom(), Handler::handler() | tuple() } | 
+    { URL::binary(), HTTP_method::atom(), Handler::handler(), Extra_paramter::any() }.
 
 init([]) -> 
     process_flag(trap_exit, true),
@@ -23,8 +24,8 @@ route({U, _, H, E}) ->
     Url = type:to_binary(U),
     Url1 = iolist_to_binary(re:replace(Url, <<"\\[number\\]">>,<<"(\\\\d+)">>,[global])),
     Url2 = iolist_to_binary(re:replace(Url1,<<"\\[string\\]">>,<<"([a-zA-Z0-9%\\\\_]+)">>,[global])),
-    Url3 = <<"^",Url2/binary,"$">>,
-    {U, Url3, H, E}.
+    Url_reg = <<"^",Url2/binary,"$">>,
+    {U, Url_reg, H, E}.
 
 route_method({_, M, _}) -> M;
 route_method({_, M, _, _}) -> M.
@@ -38,10 +39,6 @@ get_routes(Req, App) ->
     [route(Route) || Route <- Routes, route_method(Route) == Method].
 
 
-%decode_request_url(Url) ->
-%   Url1 = iolist_to_binary(re:replace(Url, <<"\\[number\\]">>,<<"(\\\\d+)">>,[global])),
-%   iolist_to_binary(re:replace(Url1,<<"\\[string\\]">>,<<"([a-zA-Z0-9%\\\\_]+)">>,[global])).
-    
 %% @doc Returns the handler with binded parameter.
 %% It checks if the requested URL matches the assigned/registered
 %% routes of application route list. If no URL match will return no_url
@@ -70,11 +67,12 @@ handle_call({resource_exists, Req, App_opts}, _From, State) ->
 -spec match_route( Request_url :: binary(), Routes :: [route_type()]) -> 
     [] | [{binary(), binary(), binary()}].
 
-%match_route(Path, Routes)-> [ Route || Route <- Routes, match == match_it(Path, Route)].
+%% Search the URL from route list, if the url exists,
+%% it will return the handler
 match_route(_,[]) -> nomatch;
 match_route(Url, [H | T]) ->
-    {_, R, _, _} = H,
-    case re:run(Url, R, [global, {capture, all, binary}]) of
+    {_, Url_reg, _, _} = H,
+    case re:run(Url, Url_reg, [global, {capture, all, binary}]) of
         nomatch -> match_route(Url, T);
         {match, _} -> H
     end.
@@ -119,14 +117,7 @@ map_handler({C, A}) ->
     C1 = type:to_list(C) ++ "_controller",
     A1 = type:to_list(A) ++ "_action",
     { type:to_atom(C1), type:to_atom(A1)};
-map_handler(C) when is_atom(C)-> map_handler({C, index});
-map_handler(H) when is_binary(H) ->
-    case re:run(H, <<"@">>) of
-        nomatch -> map_handler({H, index});
-        _ ->
-            [C, A] = re:split(H, <<"@">>),
-            map_handler({C, A})
-    end.
+map_handler(C) when is_atom(C)-> map_handler({C, index}).
 
 
 %% @doc get the bind params in url of binary() 

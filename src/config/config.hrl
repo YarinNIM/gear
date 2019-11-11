@@ -1,5 +1,4 @@
 -include("apps.hrl").
--include("crypt.hrl").
 -include("database.hrl").
 -include("event_listener.hrl").
 -include("permission_keys.hrl").
@@ -39,4 +38,13 @@
 -define(SERVER, #{
     protocol => env:get(protocol, http),
     config => env:get(protocol_config, [ {port, 80} ])
+}).
+
+%% sha| sha224 | sha256 | sha384 | sha512
+%% sha3_224 | sha3_256 | sha3_384 | sha3_512
+%% blake2b | blake2s
+%% md5 | md4
+-define(CRYPT, #{
+    algo => sha256,
+    secret_key => <<"gear_system4@default_$#!">>
 }).

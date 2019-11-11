@@ -16,7 +16,7 @@
 %% or {error, ErrorMsg}
 -spec attempt(binary(), binary(), binary()) -> {error, binary()} | integer().
 attempt(Id, Pwd, Sid) ->
-    Pwd_h = crypt:hmac(Pwd),
+    Pwd_h = crypt:hash(Pwd),
     case db:call(fun_account_login, [Id, Pwd_h]) of
         {error, Msg} -> {error, Msg};
         Aid ->
