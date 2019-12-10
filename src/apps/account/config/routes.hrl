@@ -4,6 +4,7 @@
     {<<"/test.html">>, get, {account_home, test_get}},
     {<<"/test.html">>, post, {account_home, test_post}},
 
+    {<<"">>, get, {account_home, home}},
     {<<"/">>, get, {account_home, home}},
     {<<"/init_info.html">>, get, {account_home, init_info}},
     {<<"/account.html">>, get, {account, active_account}},

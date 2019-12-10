@@ -1,9 +1,7 @@
-%% 
 %% @author Yarin NIM, <yarin.nim@gmail.com>
 %% @version 0.1
-%% @copyright 2019 welcome
-%%
-%% fjdsalfjds;laf j
+%% @copyright 2019
+
 
 -module(gear_app).
 -behaviour(application).
@@ -16,6 +14,13 @@
     sub_apps/1, sub_apps/2,
     apps/0, apps_with_domain/1, apps_with_domain/2
 ]).
+
+map_val(K,M) -> map_val(K,M, undefined).
+map_val(K,M, D) ->
+    case maps:find(K, M) of
+        error -> D;
+        {ok, V} -> V
+    end.
 
 %% Get the static application configuration
 %% including sub application static route
@@ -30,20 +35,18 @@ sub_apps(App) ->
     sub_apps(Sub, []).
 sub_apps([], Apps) -> Apps;
 sub_apps([{Prefix, App} | T], Apps) ->
-    Base = type:to_binary("/" ++ type:to_list(Prefix) ++"/[...]"),
+    Base = type:to_binary("/" ++ type:to_list(Prefix) ++ "/"),
     Pref1 = type:to_list(Prefix),
     %Static = sub_static({Prefix, App}),
     %Apps1 = Apps ++ Static ++ [
     Apps1 = Apps ++ [
-        {Base, ?HANDLER, [{app, App}, {prefix, Pref1}]}
-    ],
-    sub_apps(T, Apps1).
+        {<<Base/binary, "[...]">>, ?HANDLER, [{app, App}, {prefix, Pref1}]}
+    ], sub_apps(T, Apps1).
     
 apps_with_domain(Apps) -> apps_with_domain(Apps, []).
 apps_with_domain([], Apps) -> Apps;
 apps_with_domain([App = {_, Conf} | T], Apps_wd) ->
-    #{domain := Domain} = Conf,
-    case Domain of
+    case map_val(domain, Conf) of
         undefined -> apps_with_domain(T, Apps_wd);
         _ -> apps_with_domain(T, Apps_wd ++ [App])
     end.
@@ -61,7 +64,7 @@ apps() ->
     end, Apps_wd).
 
 %% @doc Return the dispatch configuretion
-%% and compile
+%% and compile, 
 get_dispatch() -> 
     Apps = apps(),
     cowboy_router:compile(Apps).
@@ -70,7 +73,6 @@ get_dispatch() ->
 start(_Type, _Args) ->
     Dispatch = get_dispatch(),
     Protocol = config:server(protocol),
-    
     Opts = #{
         env => #{dispatch =>  Dispatch},
         %stream_handlers =>[cowboy_compress_h, cowboy_stream_h],

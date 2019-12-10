@@ -8,28 +8,25 @@
         sub_apps => [{account, account_app}],
         static => {
             <<?SYS_PATH/binary, "static/core">>,
-            [<<"js">>, <<"images">>, <<"css">>]
+            [<<"js">>]
         }
     },
 
     %% @doc This the main administrator panel
     %% which is accessible by only administrator account.
-    admin_app => #{ 
-        domain => undefined
-    },
+    admin_app => #{ },
 
     %% @doc This application is for company resource management
     %% where is accessed by only account belongs to the specific company.
-    cp_app => #{ domain => undefined },
+    cp_app => #{},
 
     %% @doc Account application is used by general account.
     %% Account registered only one application and
     %% could be used all applications in the system.
     account_app => #{
-        domain => undefined,
         static => {
-            <<?SYS_PATH/binary, "static/account/">>,
-            [<<"js">>, <<"images">>, <<"css">>]
+            <<?SYS_PATH/binary, "static/account">>,
+            [<<"js">>]
         }
-    }
+     }
  }).

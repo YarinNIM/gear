@@ -14,7 +14,6 @@ start(_T, _A) -> start_link().
 start_link()->
     supervisor:start_link({local, config:system_sup()}, ?MODULE, []).
 
-
 init([]) ->
     {ok, {{one_for_one, 10, 10}, 
         uid_spec()
@@ -23,7 +22,7 @@ init([]) ->
 pgsql_specs() ->
     Children = maps:to_list(config:db()),
     lists:map(fun({Name, Db_conf}) ->
-        #{size := Size } = Db_conf,
+        #{size := Size} = Db_conf,
         #{max_overflow := MO} = Db_conf,
         Pool_arg = [
             {name, {local, Name}},
@@ -54,5 +53,3 @@ uid_spec() ->
         {max_overflow, 20}
     ],
     [poolboy:child_spec(uid, Pool_arg, [])].
-
-
