@@ -4,10 +4,13 @@
 -export([init/1, start/0]).
 -define(WORKER, router_worker).
 -define(SERVER, ?MODULE).
+-define(VAL(K, P), proplists:get_value(K, P)).
 
 -export([
      resource_exists/2, children/0,
-     request_url/2
+     request_url/2, 
+     static_routes/1,
+     routes/0
 ]).
 
 start() ->
@@ -17,6 +20,15 @@ start() ->
 start_link() -> 
     supervisor:start_link({local, ?SERVER}, ?MODULE, []).
 
+static_routes(App) -> route_helper:static_routes(App).
+
+
+routes() -> route_helper:routes().
+
+%% Reload the routes configraion
+%% reload() -> cowboy:set_env(gear_system, dispatch,
+
+%% Gen Server initialization
 init([]) ->
     Flags = {one_for_one, 10, 10},
     Apps = maps:to_list(config:app()),
@@ -29,9 +41,7 @@ init([]) ->
         ],
         poolboy:child_spec(Name, Pool_arg, [])
     end, Apps),
-
     {ok, {Flags, Pool_specs}}.
-
 
 request_url(Req, App_opts) ->
     Url = cowboy_req:path(Req),

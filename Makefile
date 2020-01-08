@@ -4,7 +4,7 @@ PROJECT = gear
 
 DEPS = cowboy erlydtl sync jsx gen_smtp epgsql poolboy gproc lager #eargon2
 dep_epgsql_commit = master
-dep_cowboy_commit = 2.6.3
+dep_cowboy_commit = master
 dep_gproc_commit = master
 dep_poolboy_commit = master
 dep_sync_commit = master

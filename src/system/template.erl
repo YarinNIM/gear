@@ -4,8 +4,10 @@
     render/2
 ]).
 -define(KEY(K, P), proplists:get_value(K,P)).
+-type page():: list() | atom() | binary().
 
-
+-spec render(any()) -> binary().
+-spec render(page(), map()) -> binary().
 render(C) -> render(C, []).
 render(L, Params) when is_list(L) ->
     render(type:to_binary(L), Params);

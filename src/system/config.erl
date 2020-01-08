@@ -93,10 +93,10 @@ db(K,P) ->
 db_default_pool() -> ?DB_DEFAULT_POOL.
 % db_record_size() -> ?DB_RECORD_SIZE.
     
-
 session() -> ?SESSION.
 session(K) -> map_val(K, ?SESSION).
 
+%% Get the application configration
 app() -> ?APP.
 app(App) -> map_val(App, ?APP,[]).
 app(A, K) -> app(A, K, undefined).
@@ -104,7 +104,7 @@ app(A, K, D) ->
     App = app(A),
     map_val(K, App, D).
 
-
+%% Gets the email configuration
 email() -> ?EMAILS.
 email(E) -> map_val(E, ?EMAILS,[]).
 email(E, K) ->

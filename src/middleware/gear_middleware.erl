@@ -11,7 +11,9 @@
 execute(Req, Env) -> 
     Req1 = cowboy_req:set_resp_headers(#{
         %% <<"access-control-allow-origin">> => <<"*">>,
-        <<"system-version">> => <<"testing">>,
+        <<"system-version">> => <<"Initial Version">>,
         <<"server">> => <<"Gear System 0.1">> %% Get the server header to response
     }, Req),
     {ok, Req1, Env}.
+
+

@@ -1,6 +1,7 @@
-%% @author Yarin NIM, <yarin.nim@gmail.com>
-%% @version 0.1
-%%
+%% @author Yarin NIM <yarin.nim@gmail.com>
+%% @copyright 2019
+%% @doc Toppage handler is a single entry to handle
+%% all requests, validates request and so on..
 
 -module(toppage_handler).
 -define(SERVER, #{ }).
@@ -14,8 +15,15 @@
 -export([handle_controller/2, handle_head/2, handle_body/2, handle_multipart/2]).
 -export([moved_temporarily/2]).
 -export([page_404/3]).
--define(VAL(K, L), proplists:get_value(K, L)).
--define(VAL(K, L, D), proplists:get_value(K, L, D)).
+
+map_val(K,M) -> map_val(K,M, undefined).
+map_val(K,M, D) ->
+    case maps:find(K, M) of
+        error -> D;
+        {ok, V} -> V
+    end.
+
+
 
 is_ajax(Req) ->
     case cowboy_req:header(<<"x-requested-with">>, Req, false) of
@@ -25,10 +33,13 @@ is_ajax(Req) ->
         _ -> true
     end.
 
-app_res(M, App_opts) -> 
-    App = proplists:get_value(app, App_opts),
+%% Application resource
+-spec app_res(AppReosurce::atom(), AppOptions::map())-> map().
+app_res(M, Opts) -> 
+    #{app := App} = Opts,
     App:M().
 
+%% get referer
 get_referer(Req) -> get_referer(Req, <<>>).
 get_referer(Req, Def) ->
     case cowboy_req:header(<<"referer">>, Req) of
@@ -36,29 +47,28 @@ get_referer(Req, Def) ->
         Ref -> Ref
     end.
 
+locale(Sid, Opts) ->
+    case session:get(lang, Sid) of
+        undefined -> 
+            #{language := L} = app_res(config, Opts),
+            session:set(lang, L, Sid),
+            L;
+        Lan -> Lan
+    end.
 
+%% This will run automatically on the initializing the 
+%% request, each request is starting from here.
 init(Req, Opts) ->
     io:format('~n=============INIT REQUEST============~n'),
     {SID, Req1} = session:get_session(Req),
-    pg2:join(?VAL(app, Opts), self()),
+    #{app := App_name }  = Opts,
+
+    pg2:join(App_name, self()),
     rand:seed(exs64),
-
-    App_name = proplists:get_value(app, Opts),
-    io:format(" - App name [~p]...~n",[App_name]),
-
     App_conf = app_res(config, Opts),
-
-    Lang = case session:get(lang, SID) of
-        undefined -> 
-            #{language := L} = app_res(config, Opts),
-            session:set(lang, L, SID),
-            L;
-        Lan -> Lan
-    end,
-
+    Lang = locale(SID, Opts),
     Conf = maps:remove(login_page, maps:remove(auth_pages, App_conf)),
     BaseURL = base_url(Req, Opts),
-
     Referer = case session:get(referer, SID) of
         undefined -> case cowboy_req:header(<<"referer">>, Req) of
             undefined -> BaseURL;
@@ -95,19 +105,20 @@ init(Req, Opts) ->
     {cowboy_rest, Req1, State}.
 
 
+%% Returns the base_url
+-spec base_url(Req::map(), Options::map())-> any().
 base_url(R, Opts) ->
-    %io:format('R: ~p~n=======~n~p~n',[R, Opts]),
-    Pref = case proplists:get_value(prefix, Opts) of
+    Prefix = case map_val(prefix, Opts) of
         undefined -> <<"">>;
         Pre -> type:to_binary(Pre ++ "/")
     end,
     H = cowboy_req:host(R),
     S = cowboy_req:scheme(R),
-    <<S/binary, "://", H/binary,"/", Pref/binary>>.
+    <<S/binary, "://", H/binary,"/", Prefix/binary>>.
 
 parent_url(R, Opts) ->
     Base = base_url(R, Opts),
-    case proplists:get_value(prefix, Opts) of
+    case map_val(prefix, Opts) of
         undefined -> Base;
         Pre -> 
             Pref = type:to_binary(Pre),
@@ -115,20 +126,18 @@ parent_url(R, Opts) ->
             iolist_to_binary(Re)
     end.
 
-
-
-
 % Default allowed methods
 % HEAD, GET, POST, PATCH, PUT, DELETE and OPTIONS._
-allowed_methods(Req, State)-> {[<<"GET">>,<<"POST">>,<<"PUT">>,<<"DELETE">>],Req, State}.
+allowed_methods(Req, State)-> 
+    {[<<"GET">>,<<"POST">>,<<"PUT">>,<<"DELETE">>],Req, State}.
 
 % Calling router:resource_exists called twice, 
 % should manage to make it called only once.
 is_authorized(Req, State) -> 
-    #{ app := App_opts } = State,
+    #{ app := App_opts, session_id:= SID } = State,
     App_config = app_res(config, App_opts),
+    %% #{session_id := SID } = State,
 
-    #{session_id := SID } = State,
 
     {Auth, Req1, StateRes} = case router:resource_exists(Req, App_opts) of
         {C, A, P, E} -> 
@@ -151,7 +160,7 @@ is_authorized(Req, State) ->
             State_e = State#{handler => Error},
             {true, Req, State_e}
     end,
-
+    %% io:format('\n======TEST============\n'),
     io:format(' - Checking authorization..~p~n',[Auth]),
 
 
