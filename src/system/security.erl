@@ -3,32 +3,34 @@
 -define(V(K,L,D), proplists:get_value(K,L,D)).
 -export([
      validate/3, generate/2,
-     validate_jwt/3
+     validate_jwt/3, has_login/1
 ]).
 
-%% @doc Checks if user logged in the 
-%% application
-has_login(Sid) when is_binary(Sid) ->
+%% Check if the request has login
+has_login(State) when is_map(State) ->
+    #{ session_id := Sid } = State,
+    has_login(Sid);
+has_login(Sid) ->
     case session:get(has_login, Sid) of
         true -> true;
         _ -> false
-    end;
-has_login(State) ->
-    #{session_id:= Sid} = State,
-    has_login(Sid).
+    end.
 
+%% This will validate the request.
+%% If the request is with CSRF or not
+%% @todo Will manage to make sure API works (without CSRF)
 validate(Req, State, Csrf) ->
     #{enabled := E} = Csrf,
     case E of
         false -> ok;
-        true -> check(Req, State, Csrf);
+        true -> validate_csrf(Req, State, Csrf);
         _ -> ok
     end.
 
 %% @doc Checks if the posted token name
 %% and value matches the store information
 %% on the server.
-check(Req, State, Csrf) ->
+validate_csrf(Req, State, Csrf) ->
     #{cookie_name := CN, token_name:= TN } = Csrf,
     #{body_data := Post} = State,
     Cookies = cowboy_req:parse_cookies(Req),
@@ -37,7 +39,7 @@ check(Req, State, Csrf) ->
     
     case lists:member(Token_val, Cs) of
         true -> ok;
-        _ -> {error, <<"Invalid CSRF">>}
+        _ -> {error, invalid_csrf}
     end.
 
 %% @doc Validates the JWT when account is already login.
@@ -55,7 +57,7 @@ validate_jwt(Auth, Req, State) ->
     end.
 
 %% @doc Login using JWT token
-%% Not yet implement
+%% @todo Will implement later
 -spec get_jwt(term()) -> bool.
 get_jwt(_App) -> true.
     %case helper:method_exists(App, jwt) of
@@ -64,8 +66,6 @@ get_jwt(_App) -> true.
     %%      %#{ enabled:= Enabled } = App:jwt(), 
     %       true
     %end.
-
-
 
 generate(Req, Csrf) ->
     #{enabled := E } = Csrf,
@@ -84,7 +84,7 @@ cookie_options(Csrf) ->
         end
     end, #{}, Keys).
 
-
+%% This will create csrf
 create(Req, Csrf) ->
     Cookies = cowboy_req:parse_cookies(Req),
     #{cookie_name := C_name} = Csrf,

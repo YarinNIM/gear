@@ -11,7 +11,6 @@
 
 -export([
      resource_exists/2, children/0,
-     request_url/2, 
      static_routes/1,
      routes/0, dispatch/0, reload/0
 ]).
@@ -46,21 +45,10 @@ init([]) ->
     end, Apps),
     {ok, {Flags, Pool_specs}}.
 
-request_url(Req, App_opts) ->
-    Url = cowboy_req:path(Req),
-    case proplists:get_value(prefix, App_opts) of
-        undefined -> Url;
-        Prefix -> 
-            Pre = type:to_binary(Prefix),
-            Re = re:replace(Url, <<"^/",Pre/binary>>, <<"">>),
-            iolist_to_binary(Re)
-    end.
-
-
-resource_exists(Req, App_info) ->
-    App_name = proplists:get_value(app, App_info),
-    poolboy:transaction(App_name, fun(Worker) ->
-        gen_server:call(Worker, {resource_exists, Req, App_info})
+resource_exists(Req, State) ->
+    #{ app := App } = State,
+    poolboy:transaction(App, fun(Worker) ->
+        gen_server:call(Worker, {resource_exists, Req, State})
     end).
 
 children() -> supervisor:which_children(?SERVER).

@@ -8,11 +8,16 @@
 -export([init/2, allowed_methods/2, terminate/3, is_authorized/2,
     content_types_accepted/2, delete_completed/2, delete_resource/2,
     content_types_provided/2, resource_exists/2,
-    forbidden/2, valid_content_headers/2
-%   get_referer/1, get_referer/2
+    forbidden/2, valid_content_headers/2,
+
+    get_referer/1, get_referer/2,
+    redirect_to_login/2,
+    map_val/2,
+    is_ajax/1, locale/2, base_url/2, parent_url/2
+
 ]).
 
--export([handle_controller/2, handle_head/2, handle_body/2, handle_multipart/2]).
+-export([handle_head/2, handle_body/2, handle_multipart/2]).
 -export([moved_temporarily/2]).
 -export([page_404/3]).
 
@@ -33,13 +38,6 @@ is_ajax(Req) ->
         _ -> true
     end.
 
-%% Call the application method.
-%% App which is handling this request.
-app_res(M, Opts) -> 
-    io:format('M: ~p~n~p~n',[M, Opts]),
-    #{app := App} = Opts,
-    App:M().
-
 %% get referer
 get_referer(Req) -> get_referer(Req, <<>>).
 get_referer(Req, Def) ->
@@ -49,9 +47,10 @@ get_referer(Req, Def) ->
     end.
 
 locale(Sid, Opts) ->
+    #{ app := App } = Opts,
     case session:get(lang, Sid) of
         undefined -> 
-            #{language := L} = app_res(config, Opts),
+            #{language := L} = App:config(),
             session:set(lang, L, Sid),
             L;
         Lan -> Lan
@@ -62,9 +61,9 @@ locale(Sid, Opts) ->
 init(Req, Opts) ->
     io:format('~n=============INIT REQUEST============~n'),
     {SID, Req1} = session:get_session(Req),
-    #{app := App_name }  = Opts,
+    #{ app := App } = Opts,
 
-    pg2:join(App_name, self()),
+    pg2:join(App, self()),
     rand:seed(exs64),
     Lang = locale(SID, Opts),
     BaseURL = base_url(Req, Opts),
@@ -77,8 +76,7 @@ init(Req, Opts) ->
             session:delete(referer, SID),
             Ref_s
     end,
-
-    State0 = case session:get(has_login, SID) of
+ State0 = case security:has_login(SID) of
         true -> #{
             has_login => true,
             account_id => session:get(account_id, SID)
@@ -121,52 +119,48 @@ parent_url(R, Opts) ->
 % Default allowed methods
 % HEAD, GET, POST, PATCH, PUT, DELETE and OPTIONS._
 allowed_methods(Req, State)-> 
-    #{method := Method } = State,
-    io:format(' - Allowed Methods: ~p~n', [Method]),
-    {Method, Req, State}.
+    #{allowed_methods := Methods } = State,
+    io:format(' - Allowed Methods: ~p~n', [Methods]),
+    {Methods, Req, State}.
 
 % Calling router:resource_exists called twice, 
 % should manage to make it called only once.
 is_authorized(Req, State) -> 
-    #{ app := App_opts, session_id:= SID } = State,
-    App_config = app_res(config, App_opts),
-    %% #{session_id := SID } = State,
+    io:format(' - Is authorized...~n'),
+    {true, Req, State}.
+        
 
-
-    {Auth, Req1, StateRes} = case router:resource_exists(Req, App_opts) of
-        {C, A, P, E} -> 
-            Controller = binary_to_atom(iolist_to_binary(re:replace(atom_to_binary(C, latin1), <<"_controller">>, <<"">>, [global])), latin1),
-            State1 = State#{handler => {C, A, P}, extra_param => E},
-            #{auth_pages := Auth_pages } = App_config,
-
-            %% Check if the conntroller is in Authentication configure
-            %% Which required login to access resource
-            case lists:member(Controller, Auth_pages) of
-                true -> 
-                    case session:get(has_login, SID) of
-                        false -> redirect_to_login(Req, State1);
-                        undefined -> redirect_to_login(Req, State1);
-                        _ -> {true, Req, State1}
-                    end;
-                _ -> {true, Req, State1}
-            end;
-        Error ->
-            State_e = State#{handler => Error},
-            {true, Req, State_e}
-    end,
+    %{Auth, Req1, StateRes} = case router:resource_exists(Req, State) of
+    %   {C, A, P, E} -> 
+    %       Controller = binary_to_atom(iolist_to_binary(re:replace(atom_to_binary(C, latin1), <<"_controller">>, <<"">>, [global])), latin1),
+    %       State1 = State#{handler => {C, A, P}, extra_param => E},
+    %%      #{auth_pages := Auth_pages } = App_config,
+    %       case lists:member(Controller, Auth_pages) of
+    %%%         true -> 
+    %               case security:has_login(SID) of
+    %                   false -> redirect_to_login(Req, State1);
+    %                   undefined -> redirect_to_login(Req, State1);
+    %%                  _ -> {true, Req, State1}
+    %               end;
+    %           _ -> {true, Req, State1}
+            %end;
+    %   Error ->
+    %       State_e = State#{handler => Error},
+    %       {true, Req, State_e}
+    %end,
     %% io:format('\n======TEST============\n'),
-    io:format(' - Checking authorization..~p~n',[Auth]),
+    %io:format(' - Checking authorization..~p~n',[Auth]),
 
 
     %{Auth1, Req2, State2} = security:validate_jwt(Auth, Req1, StateRes),
     %io:format(" - Validating JWT: ~p...~n",[Auth1]),
     %{Auth1, Req2, State2}.
 
-    {Auth, Req1, StateRes}.
+    %{Auth, Req1, StateRes}.
 
 redirect_to_login(Req, State) -> 
     #{ app := App } = State,
-    App_conf = app_res(config, App),
+    App_conf = App:config(),
     %#{login_page := LP } = ?APP_CONFIG,
     #{login_page := LP } = App_conf,
     case LP of
@@ -192,18 +186,17 @@ valid_content_headers(Req, State) ->
     io:format(' - Validate Content Header...~n'),
     {true, Req, State}.
 
-resource_exists(Req, State)->
-    #{handler := Handler}   = State,
-    case Handler of
-        {_, _, _} -> 
-            io:format(' - Resource exists ~n'),
-            {true, Req, State};
-        E ->
-            #{ app := App_opts } = State,
-            Path = router:request_url(Req, App_opts),
-            io:format(' - Resource exists error: ~p, ~p~n',[E, Path]),
-            page_404(Req, State, E)
-    end.
+
+    %#{handler := Handler}  = State,
+    %case Handler of
+    %   {_, _, _} -> 
+    %       io:format(' - Resource exists ~n'),
+    %       {true, Req, State};
+    %%  E ->
+    %       Path = router:request_url(Req, State),
+    %       io:format(' - Resource exists error: ~p, ~p~n',[E, Path]),
+    %       page_404(Req, State, E)
+    %end.
     
 content_types_provided(Req, State)->
     case cowboy_req:parse_header(<<"content-type">>, Req) of
@@ -215,6 +208,18 @@ content_types_provided(Req, State)->
         {{<<"application">>,<<"json">>, '*'}, handle_head},
         {{<<"text">>,<<"plain">>,'*'}, handle_head}],
     {Handler, Req, State}.
+
+resource_exists(Req, State)->
+    case router:resource_exists(Req, State) of
+        ok ->  
+            io:format(' - Resource exists [true]...~n'),
+            {true, Req, State};
+        {error, Err_msg } ->
+            io:format(' - Resource exists [~p]...~n', [Err_msg]),
+            %Req1 = cowboy_req:reply(404, Req),
+            %Req1 = cowboy_req:set_resp_header(<<"Error">>, type:to_binary(Err_msg), Req),
+            {false, Req, State}
+    end.
 
 
 content_types_accepted(Req, State) ->
@@ -323,16 +328,17 @@ handle(Content, Req, State) ->
 
 handle_head(R, S) -> 
     #{app := App} = S,
-    Csrf = app_res(csrf, App),
+    Csrf = App:csrf(),
     io:format(' - Handling HEAD...~n', []),
     {Token, Req} = security:generate(R, Csrf),
+    io:format('Token: ~p~n', [Token]),
     State = S#{token => Token},
     {Content, Req1, State1} = handle_controller(Req, State),
     handle(Content, Req1, State1).
 
 handle_body(Request, TS) ->
     #{ app := App } = TS,
-    Csrf = app_res(csrf, App),
+    Csrf = App:csrf(),
     io:format(' - Handling body request...~n'),
     {Body_data, Req} = get_body_data(Request),
     State = TS#{body_data => Body_data},
@@ -356,7 +362,7 @@ get_body_data(Req) ->
 
 handle_multipart(Req, State) -> 
     #{ app := App } = State,
-    Csrf = app_res(csrf, App),
+    Csrf = App:csrf(),
     io:format(' - Handling Multipart request...~n'),
     {Data, Req1} = stream_multipart(Req, State, []),
     State1 = State#{body_data => Data},
