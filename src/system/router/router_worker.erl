@@ -92,8 +92,7 @@ get_matched_params(RUrl, RegUrl)->
     Params.
 
 %% @doc Validates if the really exists or not
-%%
-%% @return 
+%% @returns welcome
 %%  {module_controller, method_action} if valid
 %%  no_controller: When module_controller not found
 %%  no_action: module_controller exists but there is no method_action method
@@ -110,7 +109,6 @@ get_handler(Handler) ->
         _:_ -> no_controller
     end.
 
-
 %% @doc Maps the handler@acount 
 %% into {handler_controller, method_action}
 map_handler({C, A}) -> 
@@ -118,7 +116,6 @@ map_handler({C, A}) ->
     A1 = type:to_list(A) ++ "_action",
     { type:to_atom(C1), type:to_atom(A1)};
 map_handler(C) when is_atom(C)-> map_handler({C, index}).
-
 
 %% @doc get the bind params in url of binary() 
 %% and conver to the type maped in the URL registered

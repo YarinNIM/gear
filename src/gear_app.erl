@@ -8,18 +8,14 @@
 -define(HANDLER, toppage_handler).
 
 %% API.
--export([start/2, stop/1]).
-
-%% @doc Return the dispatch configuretion
-%% and compile, 
-get_dispatch() -> 
-    Apps = router:routes(),
-    io:format('App: ~p~n',[Apps]),
-    cowboy_router:compile(Apps).
+-export([
+    start/2, stop/1,
+    on_sync/1
+]).
 
 %% @doc Start the application
 start(_Type, _Args) ->
-    Dispatch = get_dispatch(),
+    Dispatch = router:dispatch(),
     Protocol = config:server(protocol),
     Opts = #{
         env => #{dispatch =>  Dispatch},
@@ -44,9 +40,22 @@ start(_Type, _Args) ->
     event_dispatcher:start(),
 
     sync:onsync(fun(Mods) ->
-        io:format(" - Reloaded Modules: ~p~n",[Mods]) 
+        % io:format('MOdule: ~p~n',[Mods])
+        on_sync(Mods)
     end),
-
     gear_sup:start_link().
 
+%% Stop the systatem
 stop(_State) -> ok.
+
+%% Generate the module when a module is compiled and loaded
+%% @todo Will defined what functions will be run automatically
+on_sync([Module|_]) ->
+    io:format(' - Module reloaded [~p] ...~n',[Module]),
+    Found = lists:filter(fun(Item) ->
+        Item =:= Module
+    end, maps:keys(config:app())),
+    case Found of 
+        [] -> io:format('- No such app route changed~n');
+        _ -> router:reload()
+    end.

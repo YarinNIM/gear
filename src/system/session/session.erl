@@ -37,7 +37,7 @@ init([])->
 
 init_storage()->
     Storage = config:session(storage),
-    io:format('Initializing SESSION [~p]...~n', [Storage]),
+    io:format(' - Initializing SESSION with ~p...~n', [Storage]),
     case ets:info(Storage) of
         undefined -> ets:new(Storage, [named_table, set, public]);
         _ -> ok

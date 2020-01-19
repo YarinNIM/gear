@@ -3,6 +3,7 @@
 .gitignore.swp
 *.swo
 *.swp
+*.swn
 *.wsp
 *.beam
 erlang.mk

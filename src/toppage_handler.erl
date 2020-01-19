@@ -8,8 +8,8 @@
 -export([init/2, allowed_methods/2, terminate/3, is_authorized/2,
     content_types_accepted/2, delete_completed/2, delete_resource/2,
     content_types_provided/2, resource_exists/2,
-    forbidden/2, valid_content_headers/2,
-    get_referer/1, get_referer/2
+    forbidden/2, valid_content_headers/2
+%   get_referer/1, get_referer/2
 ]).
 
 -export([handle_controller/2, handle_head/2, handle_body/2, handle_multipart/2]).
@@ -24,7 +24,7 @@ map_val(K,M, D) ->
     end.
 
 
-
+%% Checks if the request is ajax request
 is_ajax(Req) ->
     case cowboy_req:header(<<"x-requested-with">>, Req, false) of
         false -> case cowboy_req:header('ajax-request', Req, false) of
@@ -33,9 +33,10 @@ is_ajax(Req) ->
         _ -> true
     end.
 
-%% Application resource
--spec app_res(AppReosurce::atom(), AppOptions::map())-> map().
+%% Call the application method.
+%% App which is handling this request.
 app_res(M, Opts) -> 
+    io:format('M: ~p~n~p~n',[M, Opts]),
     #{app := App} = Opts,
     App:M().
 
@@ -65,9 +66,7 @@ init(Req, Opts) ->
 
     pg2:join(App_name, self()),
     rand:seed(exs64),
-    App_conf = app_res(config, Opts),
     Lang = locale(SID, Opts),
-    Conf = maps:remove(login_page, maps:remove(auth_pages, App_conf)),
     BaseURL = base_url(Req, Opts),
     Referer = case session:get(referer, SID) of
         undefined -> case cowboy_req:header(<<"referer">>, Req) of
@@ -87,22 +86,15 @@ init(Req, Opts) ->
         _ -> #{ has_login => false}
     end,
 
-
     State = State0#{
         session_id => SID,
         is_ajax => is_ajax(Req1),
         lang => Lang,
         referer => Referer,
-        current_uri => cowboy_req:uri(Req),
-        path => cowboy_req:path(Req),
-        config => Conf#{
-            base_url => BaseURL,
-            parent_url => parent_url(Req, Opts)
-        },
-        app => Opts
+        parent_url => parent_url(Req, Opts)
     },
 
-    {cowboy_rest, Req1, State}.
+    {cowboy_rest, Req1, maps:merge(State, Opts)}.
 
 
 %% Returns the base_url
@@ -129,7 +121,9 @@ parent_url(R, Opts) ->
 % Default allowed methods
 % HEAD, GET, POST, PATCH, PUT, DELETE and OPTIONS._
 allowed_methods(Req, State)-> 
-    {[<<"GET">>,<<"POST">>,<<"PUT">>,<<"DELETE">>],Req, State}.
+    #{method := Method } = State,
+    io:format(' - Allowed Methods: ~p~n', [Method]),
+    {Method, Req, State}.
 
 % Calling router:resource_exists called twice, 
 % should manage to make it called only once.

@@ -1,4 +1,7 @@
 %% @author Yarin NIM, <yarin.nim@gmail.com>
+%% @copyright yarin@2020
+%% @doc Router
+
 -module(router).
 -behavior(supervisor).
 -export([init/1, start/0]).
@@ -10,20 +13,20 @@
      resource_exists/2, children/0,
      request_url/2, 
      static_routes/1,
-     routes/0
+     routes/0, dispatch/0, reload/0
 ]).
 
 start() ->
-    io:format('Starting ~p...~n',[?WORKER]),
+    io:format(' - Starting routing server...~n'),
     start_link().
 
 start_link() -> 
     supervisor:start_link({local, ?SERVER}, ?MODULE, []).
 
 static_routes(App) -> route_helper:static_routes(App).
-
-
 routes() -> route_helper:routes().
+dispatch()-> route_helper:dispatch().
+reload()-> route_helper:reload().
 
 %% Reload the routes configraion
 %% reload() -> cowboy:set_env(gear_system, dispatch,
