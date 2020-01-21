@@ -12,12 +12,8 @@
 ]).
 
 index_action(Req, State, _) ->
-    Res = resource:render_page( #{
-        js => [],
-        on_script_loaded => []
-    }, Req, State),
+    {<<"welcome">>, Req, State}.
 
-    {Res, Req, State}.
 
 test_action(Req, State, _) ->
     {<<"fdsaf">>, Req, State}.

@@ -28,12 +28,12 @@ route_method(Req) ->
 
 
 %% @doc Validates if the really exists or not
-check_handler({Controller, Action, _}) ->
+check_handler(Handler = {Controller, Action, _}) ->
     try Controller:module_info() of Module_info -> 
         Exports = proplists:get_value(exports, Module_info),
         case proplists:get_value(Action, Exports) of
             undefined -> {error, no_action};
-            _ ->  ok
+            _ ->  Handler
         end
     catch 
         _:_ -> {error, no_controller}

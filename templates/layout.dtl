@@ -1,0 +1,21 @@
+<!doctype HTML>
+{{ name }}
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href=" url('css/bulma.css') gc" rel="stylesheet" />
+        <link href=" url('css/style.css') gc" rel="stylesheet" />
+        @yield('css')
+        <script src=" url('js/fontawesome.js') gc"></script>
+        <script src=" url('js/lib.js') gc"></script>
+        <script src=" url('js/ajax.js') gc"></script>
+        <script src=" url('js/locale_en.js') gc"></script>
+        @include('header')
+    </head>
+    <body>
+        <div id="root"></div>
+        <div id="modal"></div>
+        <script src=" url('js/app.js') gc"></script>
+    </body>
+</html>

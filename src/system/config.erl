@@ -9,8 +9,8 @@
 
 -type app_state()::term().
 -export([
-    parent_url/1, parent_url/2, base_url/1, base_url/2, item/2,
-    locale_url/2, locale_url/3, app_config/1,
+    parent_url/1, parent_url/2, base_url/1, base_url/2,
+    locale_url/2, locale_url/3,
     crypt/0, crypt/1, crypt/2
 
     %%  path/0,path/1, path/2,
@@ -40,10 +40,6 @@ map_val(K,M, D) ->
         {ok, V} -> V
     end.
 
-config(State) ->
-    #{config := Conf} = State,
-    Conf.
-
 parent_url(State) -> parent_url(<<"">>, State).
 parent_url(U, S) when is_list(U) -> parent_url(type:to_binary(U), S);
 parent_url(U, S) ->
@@ -61,8 +57,7 @@ parent_url(U, S) ->
 base_url(State) -> base_url(<<"">>, State).
 base_url(U, S) when is_list(U) -> base_url(type:to_binary(U), S);
 base_url(U, S) ->
-    Conf = config(S),
-    #{base_url := Base_url} = Conf,
+    #{base_url := Base_url} = S,
     <<Base_url/binary, U/binary>>.
 
 %% @doc Return the prividied URL with extra value
@@ -77,12 +72,6 @@ locale_url(U, State, Options) ->
     #{lang := Lang} = State,
     base_url(Prefix ++ "/" ++ type:to_list(Lang) ++"/"++ Url++"."++ Ext, State).
     
-
-item(K, State) ->
-    Conf = config(State),
-    #{K := V}=Conf,
-    V.
-
 
 db() -> ?DB.
 db(P) -> map_val(P,?DB).
@@ -155,20 +144,6 @@ cors(K, C) ->
 server() -> ?SERVER.
 server(K) -> server(K, <<>>).
 server(K, D) -> map_val(K, server(), D).
-
-app_config(State) ->
-    Params = #{
-      base_url => config:base_url(State)
-    },
-
-    #{ config := Conf } = State,
-    maps:fold(fun(K, V, Map) ->
-        Map#{K => render_field(V, Params)}
-    end, #{}, Conf).
-
-render_field(F, Params) when is_binary(F) ->
-    template:render(F,Params); 
-render_field(F, _) -> F.
 
 crypt() -> ?CRYPT.
 crypt(K) -> crypt(K, undefined).

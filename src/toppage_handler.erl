@@ -121,7 +121,7 @@ parent_url(R, Opts) ->
 allowed_methods(Req, State)-> 
     #{allowed_methods := Methods } = State,
     io:format(' - Allowed Methods: ~p~n', [Methods]),
-    {Methods, Req, State}.
+    {Methods, Req, maps:remove(allowed_methods, State)}.
 
 % Calling router:resource_exists called twice, 
 % should manage to make it called only once.
@@ -209,18 +209,15 @@ content_types_provided(Req, State)->
         {{<<"text">>,<<"plain">>,'*'}, handle_head}],
     {Handler, Req, State}.
 
-resource_exists(Req, State)->
+resource_exists (Req, State) ->
     case router:resource_exists(Req, State) of
-        ok ->  
-            io:format(' - Resource exists [true]...~n'),
-            {true, Req, State};
         {error, Err_msg } ->
             io:format(' - Resource exists [~p]...~n', [Err_msg]),
-            %Req1 = cowboy_req:reply(404, Req),
-            %Req1 = cowboy_req:set_resp_header(<<"Error">>, type:to_binary(Err_msg), Req),
-            {false, Req, State}
+            {false, Req, State};
+        Handler ->
+            io:format(' - Resource exists [true]...~n'),
+            {true, Req, State#{handler => Handler}}
     end.
-
 
 content_types_accepted(Req, State) ->
     Handler = [
@@ -267,7 +264,6 @@ handle_controller(Req, State) ->
 %% @doc Force to download a file
 %% even the browser support to open the file type
 %% but it still get content to download
-
 download(File, Req, State) when is_binary(File) ->
     Name = uid:get_id(),
     FName = <<"gear_file_", Name/binary>>,
@@ -331,9 +327,10 @@ handle_head(R, S) ->
     Csrf = App:csrf(),
     io:format(' - Handling HEAD...~n', []),
     {Token, Req} = security:generate(R, Csrf),
-    io:format('Token: ~p~n', [Token]),
     State = S#{token => Token},
-    {Content, Req1, State1} = handle_controller(Req, State),
+    #{handler := {Controller, Action, Props } } = State,
+    State1 = maps:remove(handler, State),
+    {Content, Req1, State1} = Controller:Action(Req, State1, Props),
     handle(Content, Req1, State1).
 
 handle_body(Request, TS) ->
