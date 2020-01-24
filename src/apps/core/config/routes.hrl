@@ -1,10 +1,16 @@
 -define(ROUTES, [
     {<<"/">>, #{ 
          get => core_home,
-         post => {core_home, post, #{}}
+         post => {core_home, post, #{}},
+         put => {core_home, put, #{action => put}},
+         delete => {cor_home, delete, #{action => delete}}
     }},
 
-    {<<"/test">>, #{
+    {<<"/home-net-good">>, #{
+         get => core_home
+    }},
+
+    {<<"/test/:param_a[/:param_b]">>, #{
         get => {core_home, test_get}
     }},
 

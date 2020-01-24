@@ -9,7 +9,7 @@
 }).
 
 -define(CSRF, #{
-    enabled => true,
+    enabled => false,
     expires => 1,
     max_age => 3600 * 24 * 30,
     token_name => <<"gear_csrf_key">>,

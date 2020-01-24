@@ -40,7 +40,6 @@ start(_Type, _Args) ->
     event_dispatcher:start(),
 
     sync:onsync(fun(Mods) ->
-        % io:format('MOdule: ~p~n',[Mods])
         on_sync(Mods)
     end),
     gear_sup:start_link().
@@ -56,6 +55,6 @@ on_sync([Module|_]) ->
         Item =:= Module
     end, maps:keys(config:app())),
     case Found of 
-        [] -> io:format('- No such app route changed~n');
+        [] -> ok;
         _ -> router:reload()
     end.

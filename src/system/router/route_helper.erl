@@ -52,9 +52,7 @@ with_domain([App = {_, Conf} | T], Apps_wd) ->
 %% returns all route list of all applications
 routes() ->
     Apps = maps:to_list(config:app()),
-    io:format('App: ~p~n',[Apps]),
     Apps_wd = with_domain(Apps),
-    io:format('Apps with domain: ~p~n',[Apps_wd]),
     lists:map(fun({App, _}) ->
         Domain = config:app(App, domain),
         Path = app_routes(App)
@@ -101,4 +99,7 @@ dispatch() ->
     Routes = router:routes(),
     cowboy_router:compile(Routes).
 
-reload() -> ok.
+reload() ->
+    io:format(' - Reloading route dispatch...~n'),
+    Dispatch = dispatch(),
+    cowboy:set_env(gear_system, dispatch, Dispatch).

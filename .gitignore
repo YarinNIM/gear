@@ -4,6 +4,7 @@
 *.swo
 *.swp
 *.swn
+*.swm
 *.wsp
 *.beam
 erlang.mk

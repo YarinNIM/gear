@@ -203,6 +203,7 @@ content_types_provided(Req, State)->
         undefined -> io:format(' - Content type provided...~n');
         {C, P, _} -> io:format(' - Content type provided ~p, ~p...~n',[C, P]) 
     end,
+
     Handler = [
         {{<<"text">>,<<"html">>, '*'}, handle_head},
         {{<<"application">>,<<"json">>, '*'}, handle_head},
@@ -251,11 +252,9 @@ escape(Content, Req, State) ->
     {Res, Req1, State}.
 
 handle_controller(Req, State) ->
-    #{handler := Handler} = State,
+    #{handler := Handler } = State,
     case Handler of 
-        {C,A,P}-> 
-            io:format(' - Handle: ~p:~p(~p)~n',[C,A,P]),
-            C:A(Req, State, P);
+        {C,A,P}-> C:A(Req, State, P);
         E -> 
             Req_e = cowboy_req:reply(404, #{<<"msg">> => E}, Req),
             {E, Req_e, State}
@@ -341,7 +340,8 @@ handle_body(Request, TS) ->
     State = TS#{body_data => Body_data},
 
     {Content, R, S} = case security:validate(Req, State, Csrf) of
-        ok -> handle_controller(Req, State);
+        ok -> 
+            handle_controller(Req, State);
         _ -> {{csrf, <<"Forbidden for CSRF">>}, Req, State}
     end,
 
