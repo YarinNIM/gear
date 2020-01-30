@@ -1,0 +1,5 @@
+#!/usr/bin/expect
+spawn psql -Ugear_user -h localhost -d gear_db
+    expect "Password"
+    send "gear_user@GEAR1\n"
+interact

@@ -1,0 +1,34 @@
+select * from fun_dropfunction('fun_account_login');
+
+CREATE OR REPLACE FUNCTION fun_account_login(
+    p_email varchar, 
+    p_pwd varchar) RETURNS integer AS $$
+declare 
+    p_eid integer;
+    p_account account%rowtype;
+BEGIN
+
+    select email.id into p_eid 
+    from email where lower(email.email) = lower(p_email);
+
+    if not found then
+        raise exception 'Email does not exist';
+    end if;
+
+    select account.* into p_account
+    from account inner join email on account.email_id = email.id
+    where lower(email.email) = lower(p_email)
+        and account.password = p_pwd;
+        
+
+    if not found then
+        raise exception 'Invalid Email/Password';
+    end if;
+
+    if p_account.verified = false then
+        raise exception 'account_not_verified';
+    end if;
+
+    return p_account.id;
+    
+END $$ language plpgsql;

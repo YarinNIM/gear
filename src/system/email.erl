@@ -24,17 +24,9 @@ send(Props) ->
     %#{callback := Cb } = Props,
 
     To = to_rep(Tos),
-
     Mime_body = mime_body(Props),
-
     Mime_att = mime_attachment(Props),
-
     From_email = proplists:get_value('username',Op),
-
-    %{C, T} = case Mime_att of
-    %   [] -> content_type(Props);
-    %   _ -> {<<"multipart">>, <<"mixed">>}
-    %end,
 
     [Sender |_ ] = To,
     Mime_e = [
@@ -50,7 +42,7 @@ send(Props) ->
     end,
 
     %%Dkim = dkim_options(),
-    Email = {<<"multipart">>, <<"mixed">>, Mime_email,[],[Mime_body | Mime_att]},
+    Email = {<<"multipart">>, <<"mixed">>, Mime_email,#{},[Mime_body | Mime_att]},
     Encoded = mimemail:encode(Email),
     Gen_res = gen_smtp_client:send({From_email, To, Encoded}, Op, fun(Cb) ->
             io:format(' - Email callback [~p]...~n', [Cb])
@@ -90,9 +82,10 @@ mime_body(Props) ->
 
 mime_attachment(Props) ->
     Files = get_field(attachment, Props, []),
-    [get_att(File) || File <- Files].
+    [get_attachment(File) || File <- Files].
 
-get_att(F) ->
+%% Get the attachment
+get_attachment(F) ->
     File = type:to_binary(F),
     Name = filename:basename(File),
     Content = case file:read_file(File) of

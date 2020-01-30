@@ -1,0 +1,5 @@
+insert into company_fleet_service(
+    company_id, service_id, price
+)
+values(7, 1, 2), (7,2, 3), (7,3,10);
+    
