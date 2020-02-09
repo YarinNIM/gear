@@ -5,8 +5,11 @@
 
 -module(toppage_handler).
 -define(SERVER, #{ }).
--export([init/2, allowed_methods/2, terminate/3, is_authorized/2,
-    content_types_accepted/2, delete_completed/2, delete_resource/2,
+-export([
+    init/2,
+    known_methods/2, allowed_methods/2, terminate/3, is_authorized/2,
+    content_types_accepted/2,
+    delete_completed/2, delete_resource/2,
     content_types_provided/2, resource_exists/2,
     forbidden/2, valid_content_headers/2,
 
@@ -116,15 +119,24 @@ parent_url(R, Opts) ->
             iolist_to_binary(Re)
     end.
 
-% Default allowed methods
-% HEAD, GET, POST, PATCH, PUT, DELETE and OPTIONS._
+%% @doct The known_methods and allowed_methods callbacks return a 
+%% list of methods. Cowboy then checks if the request 
+%% method is in the list, and stops otherwise.
+known_methods(Req, State) ->
+    Methods = [<<"GET">>, <<"POST">>, <<"PUT">>, <<"DELETE">>],
+    io:format(' - Known methods: ~p...~n',[Methods]),
+    {Methods, Req, State}.
+
 allowed_methods(Req, State)-> 
     #{allowed_methods := Methods } = State,
-    io:format(' - Allowed Methods: ~p~n', [Methods]),
+    io:format(' - Allowed methods for this URI: ~p~n', [Methods]),
     {Methods, Req, maps:remove(allowed_methods, State)}.
 
-% Calling router:resource_exists called twice, 
-% should manage to make it called only once.
+%% @doc The is_authorized callback may be used to check that access to the 
+%% resource is authorized. Authentication may also be performed as needed. 
+%% When authorization is denied, the return value from the callback 
+%% must include a challenge applicable to the requested resource, 
+%% which will be sent back to the client in the www-authenticate header.
 is_authorized(Req, State) -> 
     io:format(' - Is authorized...~n'),
     {true, Req, State}.
@@ -216,11 +228,11 @@ resource_exists (Req, State) ->
             io:format(' - Resource exists [~p]...~n', [Err_msg]),
             {false, Req, State};
         Handler ->
-            io:format(' - Resource exists [true]...~n'),
+            io:format(' - Resource exists [~p]...~n', [Handler]),
             {true, Req, State#{handler => Handler}}
     end.
 
-content_types_accepted(Req, State) ->
+content_types_accepted (Req, State) ->
     Handler = [
         {{<<"text">>,<<"html">>, '*'}, handle_body},
         {{<<"application">>,<<"json">>, '*'}, handle_body},

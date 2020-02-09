@@ -18,7 +18,6 @@ handle_call({resource_exists, Req, App_opts}, _From, State) ->
     Method = route_method(Req),
     #{ handler := Handlers} = App_opts,
     #{ Method := Handler } = Handlers,
-    io:format(' - Handler: ~p...~n', [Handler]),
     Res = check_handler(Handler),
     {reply, Res, State}.
 
